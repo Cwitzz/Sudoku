@@ -1,6 +1,5 @@
 import random
 
-
 class TabuleiroSudoku:
     def __init__(self):
         # Crie um tabuleiro vazio (9x9) inicialmente com zeros
@@ -91,7 +90,7 @@ class TabuleiroSudoku:
         return True
 
     def gerar_valido(self):
-        for i in range(0, 9 ,3):
+        for i in range(0, 9, 3):
             self.preencher_bloco(i, i)
 
     def preencher_bloco(self, row, col):
@@ -110,28 +109,47 @@ class TabuleiroSudoku:
                     print("| ", end="")
                 print(self.tabuleiro[i][j], " ", end="")
             print()
-# Função principal
+
+    def limpar_tabuleiro(self):
+        self.tabuleiro = [[0 for _ in range(9)] for _ in range(9)]
+
+    def criar_novo_tabuleiro(self):
+        self.limpar_tabuleiro()
+        self.gerar_valido()
+        print("Tabuleiro válido gerado:")
+        self.mostrar_tabuleiro()
+
+        if self.verificar_validade():
+            print("\nTabuleiro válido.")
+        else:
+            print("\nTabuleiro inválido.")
+
+        if self.resolver():
+            print("\nTabuleiro resolvido:")
+            self.mostrar_tabuleiro()
+        else:
+            print("\nNão foi possível resolver o Sudoku.")
+
+def exibir_menu():
+    print("\n=== MENU ===")
+    print("1. Criar novo tabuleiro")
+    print("2. Sair")
+
 def main():
     # Crie uma instância do tabuleiro
     tabuleiro = TabuleiroSudoku()
 
-    # Gere um tabuleiro válido e mostre-o
-    tabuleiro.gerar_valido()
-    print("Tabuleiro válido gerado:")
-    tabuleiro.mostrar_tabuleiro()
+    while True:
+        exibir_menu()
+        opcao = input("Escolha uma opção: ")
 
-    # Verifique a validade do tabuleiro gerado
-    if tabuleiro.verificar_validade():
-        print("\nTabuleiro válido.")
-    else:
-        print("\nTabuleiro inválido.")
-
-    # Resolva o tabuleiro
-    if tabuleiro.resolver():
-        print("\nTabuleiro resolvido:")
-        tabuleiro.mostrar_tabuleiro()
-    else:
-        print("\nNão foi possível resolver o Sudoku.")
+        if opcao == "1":
+            tabuleiro.criar_novo_tabuleiro()
+        elif opcao == "2":
+            print("Saindo do programa...")
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
 
 if __name__ == "__main__":
     main()
