@@ -55,11 +55,12 @@ class TabuleiroSudoku:
         return None
 
     def pode_inserir(self, row, col, num):
+        bloco_start_row, bloco_start_col = 3 * (row // 3), 3 * (col // 3)
         return all(
-            self.tabuleiro[row][i] != num
-            and self.tabuleiro[i][col] != num
-            and self.tabuleiro[3 * (row // 3) + i][3 * (col // 3) + j] != num
-            for i in range(9) for j in range(9) if self.tabuleiro[3 * (row // 3) + i][3 * (col // 3) + j] != 0
+            self.tabuleiro[bloco_start_row + i][bloco_start_col + j] != num
+            for i in range(3)
+            for j in range(3)
+            if self.tabuleiro[bloco_start_row + i][bloco_start_col + j] != 0
         )
 
     def gerar_valido(self):
@@ -137,10 +138,12 @@ def resolver_tabuleiro_gui(tabuleiro, label_status):
     else:
         label_status.config(text="Não foi possível resolver o Sudoku.")
 
-def criar_novo_tabuleiro_gui(tabuleiro, label_status):
+def criar_novo_tabuleiro_gui(tabuleiro, entries, label_status):
     tabuleiro.limpar_tabuleiro()
     tabuleiro.gerar_valido()
     label_status.config(text="Tabuleiro válido gerado.")
+    atualizar_tabuleiro_gui(tabuleiro, entries)  # Atualizar a interface com o novo tabuleiro
+
 
 def atualizar_tabuleiro_gui(tabuleiro, entries):
     for i in range(9):
@@ -166,10 +169,13 @@ def resolver_animacao(tabuleiro, entries, label_status):
         return True
 
     row, col = vazio
-    for num in range(1, 10):
+    numeros = list(range(1, 10))
+    random.shuffle(numeros)
+
+    for num in numeros:
         if tabuleiro.pode_inserir(row, col, num):
             tabuleiro.tabuleiro[row][col] = num
-            entries[row][col].config(state="normal")
+            entries[row][col].config(state="normal", fg=PALETA_CORES[num])
             entries[row][col].delete(0, "end")
             entries[row][col].insert(0, str(num))
             entries[row][col].update()
@@ -179,12 +185,14 @@ def resolver_animacao(tabuleiro, entries, label_status):
                 return True
 
             tabuleiro.tabuleiro[row][col] = 0
-            entries[row][col].config(state="normal")
+            entries[row][col].config(state="normal", fg="black")
             entries[row][col].delete(0, "end")
             entries[row][col].update()
             time.sleep(0.1)
 
     return False
+
+
 
 def main():
     root = tk.Tk()
@@ -215,7 +223,7 @@ def main():
     btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_animacao(tabuleiro, entries, label_status))
     btn_resolver.pack(side=tk.LEFT, padx=5)
 
-    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, label_status))
+    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, entries, label_status))
     btn_novo_tabuleiro.pack(side=tk.LEFT, padx=5)
 
     root.mainloop()
