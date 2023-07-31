@@ -139,13 +139,6 @@ def mostrar_tabuleiro_gui(tabuleiro):
         print()
 
 
-def criar_novo_tabuleiro_gui(tabuleiro, entries, label_status):
-    tabuleiro.limpar_tabuleiro()
-    tabuleiro.gerar_valido()
-    label_status.config(text="Tabuleiro válido gerado.")
-    atualizar_tabuleiro_gui(tabuleiro, entries)  # Atualizar a interface com o novo tabuleiro
-
-
 def atualizar_tabuleiro_gui(tabuleiro, entries):
     for i in range(9):
         for j in range(9):
@@ -201,6 +194,14 @@ def resolver(tabuleiro, entries, label_status):
 
     return False
 
+
+def criar_novo_tabuleiro(tabuleiro, entries, label_status, label_tempo):
+    tabuleiro.limpar_tabuleiro()
+    tabuleiro.gerar_valido()
+    label_status.config(text="Tabuleiro válido gerado.")
+    label_tempo.config(text="Tempo de resolução: -")
+    atualizar_tabuleiro_gui(tabuleiro, entries)  # Atualizar a interface com o novo tabuleiro
+
 def resolver_tabuleiro_gui(tabuleiro, entries, label_status, label_tempo):
     start_time = time.time()  # Registrar o tempo de início da resolução
     elapsed_time = resolver_animacao(tabuleiro, entries, label_status)
@@ -209,7 +210,7 @@ def resolver_tabuleiro_gui(tabuleiro, entries, label_status, label_tempo):
         label_tempo.config(text=f"Tempo de resolução: {elapsed_time:.6f} segundos")
     else:
         label_status.config(text="Não foi possível resolver o Sudoku.")
-
+        label_tempo.config(text="Tempo de resolução: -")
 
 def main():
     root = tk.Tk()
@@ -243,7 +244,7 @@ def main():
     btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_tabuleiro_gui(tabuleiro, entries, label_status, label_tempo))
     btn_resolver.pack(side=tk.LEFT, padx=5)
 
-    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, entries, label_status))
+    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro(tabuleiro, entries, label_status, label_tempo))
     btn_novo_tabuleiro.pack(side=tk.LEFT, padx=5)
 
     root.mainloop()
