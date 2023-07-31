@@ -55,13 +55,19 @@ class TabuleiroSudoku:
         return None
 
     def pode_inserir(self, row, col, num):
+        # Verificar se o número já existe na mesma linha ou coluna
+        for i in range(9):
+            if self.tabuleiro[i][col] == num or self.tabuleiro[row][i] == num:
+                return False
+
+        # Verificar se o número já existe no bloco 3x3
         bloco_start_row, bloco_start_col = 3 * (row // 3), 3 * (col // 3)
-        return all(
-            self.tabuleiro[bloco_start_row + i][bloco_start_col + j] != num
-            for i in range(3)
-            for j in range(3)
-            if self.tabuleiro[bloco_start_row + i][bloco_start_col + j] != 0
-        )
+        for i in range(3):
+            for j in range(3):
+                if self.tabuleiro[bloco_start_row + i][bloco_start_col + j] == num:
+                    return False
+
+        return True
 
     def gerar_valido(self):
         for i in range(0, 9, 3):
@@ -161,11 +167,13 @@ def atualizar_tabuleiro_gui(tabuleiro, entries):
                 entry.config(state="disabled")
 
 def resolver_animacao(tabuleiro, entries, label_status):
+    start_time = time.time()  # Registrar o tempo inicial
     vazio = tabuleiro.proxima_celula_vazia()
     if not vazio:
         # Tabuleiro resolvido
         atualizar_tabuleiro_gui(tabuleiro, entries)
-        label_status.config(text="Tabuleiro resolvido!")
+        elapsed_time = time.time() - start_time  # Calcular o tempo decorrido
+        label_status.config(text=f"Tabuleiro resolvido! Tempo: {elapsed_time:.2f} segundos")
         return True
 
     row, col = vazio
@@ -191,7 +199,6 @@ def resolver_animacao(tabuleiro, entries, label_status):
             time.sleep(0.1)
 
     return False
-
 
 
 def main():
