@@ -1,5 +1,5 @@
 import random
-
+import tkinter as tk
 class TabuleiroSudoku:
     def __init__(self):
         # Crie um tabuleiro vazio (9x9) inicialmente com zeros
@@ -130,26 +130,60 @@ class TabuleiroSudoku:
         else:
             print("\nNão foi possível resolver o Sudoku.")
 
-def exibir_menu():
-    print("\n=== MENU ===")
-    print("1. Criar novo tabuleiro")
-    print("2. Sair")
+def criar_tabuleiro_gui():
+    tabuleiro = TabuleiroSudoku()
+    tabuleiro.gerar_valido()
+    return tabuleiro
+
+def mostrar_tabuleiro_gui(tabuleiro):
+    for i in range(9):
+        if i % 3 == 0 and i != 0:
+            print("- - - - - - - - - - -")
+        for j in range(9):
+            if j % 3 == 0 and j != 0:
+                print("| ", end="")
+            print(tabuleiro.tabuleiro[i][j], " ", end="")
+        print()
+
+def resolver_tabuleiro_gui(tabuleiro, label_status):
+    if tabuleiro.resolver():
+        label_status.config(text="Tabuleiro resolvido!")
+    else:
+        label_status.config(text="Não foi possível resolver o Sudoku.")
+
+def criar_novo_tabuleiro_gui(tabuleiro, label_status):
+    tabuleiro.limpar_tabuleiro()
+    tabuleiro.gerar_valido()
+    label_status.config(text="Tabuleiro válido gerado.")
 
 def main():
-    # Crie uma instância do tabuleiro
-    tabuleiro = TabuleiroSudoku()
+    root = tk.Tk()
+    root.title("Sudoku Solver")
 
-    while True:
-        exibir_menu()
-        opcao = input("Escolha uma opção: ")
+    tabuleiro = criar_tabuleiro_gui()
 
-        if opcao == "1":
-            tabuleiro.criar_novo_tabuleiro()
-        elif opcao == "2":
-            print("Saindo do programa...")
-            break
-        else:
-            print("Opção inválida. Tente novamente.")
+    label_status = tk.Label(root, text="Tabuleiro gerado. Clique em Resolver para resolver o Sudoku.")
+    label_status.pack(pady=10)
+
+    frame_tabuleiro = tk.Frame(root)
+    frame_tabuleiro.pack()
+
+    for i in range(9):
+        for j in range(9):
+            entry = tk.Entry(frame_tabuleiro, width=2, font=('Helvetica', 20))
+            entry.grid(row=i, column=j)
+            entry.insert(0, str(tabuleiro.tabuleiro[i][j]))
+
+    frame_botoes = tk.Frame(root)
+    frame_botoes.pack(pady=10)
+
+    btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_tabuleiro_gui(tabuleiro, label_status))
+    btn_resolver.pack(side=tk.LEFT, padx=5)
+
+    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, label_status))
+    btn_novo_tabuleiro.pack(side=tk.LEFT, padx=5)
+
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
