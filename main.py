@@ -138,11 +138,6 @@ def mostrar_tabuleiro_gui(tabuleiro):
             print(tabuleiro.tabuleiro[i][j], " ", end="")
         print()
 
-def resolver_tabuleiro_gui(tabuleiro, label_status):
-    if tabuleiro.resolver():
-        label_status.config(text="Tabuleiro resolvido!")
-    else:
-        label_status.config(text="Não foi possível resolver o Sudoku.")
 
 def criar_novo_tabuleiro_gui(tabuleiro, entries, label_status):
     tabuleiro.limpar_tabuleiro()
@@ -167,13 +162,21 @@ def atualizar_tabuleiro_gui(tabuleiro, entries):
                 entry.config(state="disabled")
 
 def resolver_animacao(tabuleiro, entries, label_status):
-    start_time = time.time()  # Registrar o tempo inicial
+    start_time = time.time()  # Registrar o tempo de início da resolução
+    success = resolver(tabuleiro, entries, label_status)
+    end_time = time.time()  # Registrar o tempo de fim da resolução
+    elapsed_time = end_time - start_time  # Calcular o tempo decorrido
+
+    if success:
+        return elapsed_time
+    else:
+        return None
+
+def resolver(tabuleiro, entries, label_status):
     vazio = tabuleiro.proxima_celula_vazia()
     if not vazio:
         # Tabuleiro resolvido
         atualizar_tabuleiro_gui(tabuleiro, entries)
-        elapsed_time = time.time() - start_time  # Calcular o tempo decorrido
-        label_status.config(text=f"Tabuleiro resolvido! Tempo: {elapsed_time:.2f} segundos")
         return True
 
     row, col = vazio
@@ -187,18 +190,25 @@ def resolver_animacao(tabuleiro, entries, label_status):
             entries[row][col].delete(0, "end")
             entries[row][col].insert(0, str(num))
             entries[row][col].update()
-            time.sleep(0.1)
 
-            if resolver_animacao(tabuleiro, entries, label_status):
+            if resolver(tabuleiro, entries, label_status):
                 return True
 
             tabuleiro.tabuleiro[row][col] = 0
             entries[row][col].config(state="normal", fg="black")
             entries[row][col].delete(0, "end")
             entries[row][col].update()
-            time.sleep(0.1)
 
     return False
+
+def resolver_tabuleiro_gui(tabuleiro, entries, label_status, label_tempo):
+    start_time = time.time()  # Registrar o tempo de início da resolução
+    elapsed_time = resolver_animacao(tabuleiro, entries, label_status)
+    if elapsed_time is not None:
+        label_status.config(text="Tabuleiro resolvido!")
+        label_tempo.config(text=f"Tempo de resolução: {elapsed_time:.6f} segundos")
+    else:
+        label_status.config(text="Não foi possível resolver o Sudoku.")
 
 
 def main():
@@ -209,6 +219,9 @@ def main():
 
     label_status = tk.Label(root, text="Tabuleiro gerado. Clique em Resolver para resolver o Sudoku.")
     label_status.pack(pady=10)
+
+    label_tempo = tk.Label(root, text="", font=("Helvetica", 12))
+    label_tempo.pack(pady=5)
 
     frame_tabuleiro = tk.Frame(root)
     frame_tabuleiro.pack()
@@ -227,7 +240,7 @@ def main():
     frame_botoes = tk.Frame(root)
     frame_botoes.pack(pady=10)
 
-    btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_animacao(tabuleiro, entries, label_status))
+    btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_tabuleiro_gui(tabuleiro, entries, label_status, label_tempo))
     btn_resolver.pack(side=tk.LEFT, padx=5)
 
     btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, entries, label_status))
