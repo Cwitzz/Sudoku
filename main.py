@@ -136,7 +136,7 @@ def criar_tabuleiro_gui():
     tabuleiro.gerar_valido()
     return tabuleiro
 
-def mostrar_tabuleiro_gui(tabuleiro):
+def mostrar_tabuleiro_gui(tabuleiro, entries):
     for i in range(9):
         if i % 3 == 0 and i != 0:
             print("- - - - - - - - - - -")
@@ -144,18 +144,23 @@ def mostrar_tabuleiro_gui(tabuleiro):
             if j % 3 == 0 and j != 0:
                 print("| ", end="")
             print(tabuleiro.tabuleiro[i][j], " ", end="")
+            entries[i][j].delete(0, tk.END)  # Limpar o campo
+            entries[i][j].insert(0, str(tabuleiro.tabuleiro[i][j]))  # Atualizar valor
+
         print()
 
-def resolver_tabuleiro_gui(tabuleiro, label_status):
+def resolver_tabuleiro_gui(tabuleiro, label_status, entries):
     if tabuleiro.resolver():
         label_status.config(text="Tabuleiro resolvido!")
+        mostrar_tabuleiro_gui(tabuleiro, entries)  # Atualizar a GUI com o tabuleiro resolvido
     else:
         label_status.config(text="Não foi possível resolver o Sudoku.")
 
-def criar_novo_tabuleiro_gui(tabuleiro, label_status):
+def criar_novo_tabuleiro_gui(tabuleiro, label_status, entries):
     tabuleiro.limpar_tabuleiro()
     tabuleiro.gerar_valido()
     label_status.config(text="Tabuleiro válido gerado.")
+    mostrar_tabuleiro_gui(tabuleiro, entries)  # Atualizar a GUI com o novo tabuleiro
 
 def main():
     root = tk.Tk()
@@ -183,10 +188,10 @@ def main():
     frame_botoes = tk.Frame(root)
     frame_botoes.pack(pady=10)
 
-    btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_tabuleiro_gui(tabuleiro, label_status))
+    btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_tabuleiro_gui(tabuleiro, label_status, entries))
     btn_resolver.pack(side=tk.LEFT, padx=5)
 
-    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, label_status))
+    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, label_status, entries))
     btn_novo_tabuleiro.pack(side=tk.LEFT, padx=5)
 
     root.mainloop()
