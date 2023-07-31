@@ -1,37 +1,21 @@
 import random
 import tkinter as tk
+import time
 
 class TabuleiroSudoku:
     def __init__(self):
-        # Crie um tabuleiro vazio (9x9) inicialmente com zeros
         self.tabuleiro = [[0 for _ in range(9)] for _ in range(9)]
 
     def verificar_validade(self):
-        # Verificar cada linha, coluna e bloco 3x3
-        for i in range(9):
-            if not self.validar_linha(i) or not self.validar_coluna(i) or not self.validar_bloco(i):
-                return False
-        return True
+        return all(self.validar_linha(i) and self.validar_coluna(i) and self.validar_bloco(i) for i in range(9))
 
     def validar_linha(self, row):
-        numeros_presentes = set()
-        for col in range(9):
-            num = self.tabuleiro[row][col]
-            if num != 0:
-                if num in numeros_presentes:
-                    return False
-                numeros_presentes.add(num)
-        return True
+        numeros_presentes = set(num for num in self.tabuleiro[row] if num != 0)
+        return len(numeros_presentes) == len(self.tabuleiro[row])
 
     def validar_coluna(self, col):
-        numeros_presentes = set()
-        for row in range(9):
-            num = self.tabuleiro[row][col]
-            if num != 0:
-                if num in numeros_presentes:
-                    return False
-                numeros_presentes.add(num)
-        return True
+        numeros_presentes = set(self.tabuleiro[row][col] for row in range(9) if self.tabuleiro[row][col] != 0)
+        return len(numeros_presentes) == len(self.tabuleiro)
 
     def validar_bloco(self, block):
         numeros_presentes = set()
@@ -67,28 +51,16 @@ class TabuleiroSudoku:
         for i in range(9):
             for j in range(9):
                 if self.tabuleiro[i][j] == 0:
-                    return (i, j)
+                    return i, j
         return None
 
     def pode_inserir(self, row, col, num):
-        # Verificar se o número num já está presente na mesma linha
-        for i in range(9):
-            if self.tabuleiro[row][i] == num:
-                return False
-
-        # Verificar se o número num já está presente na mesma coluna
-        for i in range(9):
-            if self.tabuleiro[i][col] == num:
-                return False
-
-        # Verificar se o número num já está presente no mesmo bloco 3x3
-        bloco_start_row, bloco_start_col = 3 * (row // 3), 3 * (col // 3)
-        for i in range(3):
-            for j in range(3):
-                if self.tabuleiro[bloco_start_row + i][bloco_start_col + j] == num:
-                    return False
-
-        return True
+        return all(
+            self.tabuleiro[row][i] != num
+            and self.tabuleiro[i][col] != num
+            and self.tabuleiro[3 * (row // 3) + i][3 * (col // 3) + j] != num
+            for i in range(9) for j in range(9) if self.tabuleiro[3 * (row // 3) + i][3 * (col // 3) + j] != 0
+        )
 
     def gerar_valido(self):
         for i in range(0, 9, 3):
@@ -131,12 +103,25 @@ class TabuleiroSudoku:
         else:
             print("\nNão foi possível resolver o Sudoku.")
 
+
+PALETA_CORES = {
+    1: "blue",
+    2: "green",
+    3: "red",
+    4: "purple",
+    5: "orange",
+    6: "cyan",
+    7: "magenta",
+    8: "yellow",
+    9: "brown",
+}
+
 def criar_tabuleiro_gui():
     tabuleiro = TabuleiroSudoku()
     tabuleiro.gerar_valido()
     return tabuleiro
 
-def mostrar_tabuleiro_gui(tabuleiro, entries):
+def mostrar_tabuleiro_gui(tabuleiro):
     for i in range(9):
         if i % 3 == 0 and i != 0:
             print("- - - - - - - - - - -")
@@ -144,23 +129,62 @@ def mostrar_tabuleiro_gui(tabuleiro, entries):
             if j % 3 == 0 and j != 0:
                 print("| ", end="")
             print(tabuleiro.tabuleiro[i][j], " ", end="")
-            entries[i][j].delete(0, tk.END)  # Limpar o campo
-            entries[i][j].insert(0, str(tabuleiro.tabuleiro[i][j]))  # Atualizar valor
-
         print()
 
-def resolver_tabuleiro_gui(tabuleiro, label_status, entries):
+def resolver_tabuleiro_gui(tabuleiro, label_status):
     if tabuleiro.resolver():
         label_status.config(text="Tabuleiro resolvido!")
-        mostrar_tabuleiro_gui(tabuleiro, entries)  # Atualizar a GUI com o tabuleiro resolvido
     else:
         label_status.config(text="Não foi possível resolver o Sudoku.")
 
-def criar_novo_tabuleiro_gui(tabuleiro, label_status, entries):
+def criar_novo_tabuleiro_gui(tabuleiro, label_status):
     tabuleiro.limpar_tabuleiro()
     tabuleiro.gerar_valido()
     label_status.config(text="Tabuleiro válido gerado.")
-    mostrar_tabuleiro_gui(tabuleiro, entries)  # Atualizar a GUI com o novo tabuleiro
+
+def atualizar_tabuleiro_gui(tabuleiro, entries):
+    for i in range(9):
+        for j in range(9):
+            num = tabuleiro.tabuleiro[i][j]
+            entry = entries[i][j]
+            if num != 0:
+                entry.config(state="normal", fg=PALETA_CORES[num])
+                entry.delete(0, "end")
+                entry.insert(0, str(num))
+                entry.config(state="disabled")
+            else:
+                entry.config(state="normal", fg="black")
+                entry.delete(0, "end")
+                entry.config(state="disabled")
+
+def resolver_animacao(tabuleiro, entries, label_status):
+    vazio = tabuleiro.proxima_celula_vazia()
+    if not vazio:
+        # Tabuleiro resolvido
+        atualizar_tabuleiro_gui(tabuleiro, entries)
+        label_status.config(text="Tabuleiro resolvido!")
+        return True
+
+    row, col = vazio
+    for num in range(1, 10):
+        if tabuleiro.pode_inserir(row, col, num):
+            tabuleiro.tabuleiro[row][col] = num
+            entries[row][col].config(state="normal")
+            entries[row][col].delete(0, "end")
+            entries[row][col].insert(0, str(num))
+            entries[row][col].update()
+            time.sleep(0.1)
+
+            if resolver_animacao(tabuleiro, entries, label_status):
+                return True
+
+            tabuleiro.tabuleiro[row][col] = 0
+            entries[row][col].config(state="normal")
+            entries[row][col].delete(0, "end")
+            entries[row][col].update()
+            time.sleep(0.1)
+
+    return False
 
 def main():
     root = tk.Tk()
@@ -174,24 +198,24 @@ def main():
     frame_tabuleiro = tk.Frame(root)
     frame_tabuleiro.pack()
 
-    entries = []  # Lista para armazenar as entradas dos campos do tabuleiro
-
+    entries = []
     for i in range(9):
         row_entries = []
         for j in range(9):
-            entry = tk.Entry(frame_tabuleiro, width=2, font=('Helvetica', 20))
+            entry = tk.Entry(frame_tabuleiro, width=2, font=('Helvetica', 20), justify='center')
             entry.grid(row=i, column=j)
             entry.insert(0, str(tabuleiro.tabuleiro[i][j]))
+            entry.config(state="disabled", disabledbackground="white", disabledforeground="black")
             row_entries.append(entry)
         entries.append(row_entries)
 
     frame_botoes = tk.Frame(root)
     frame_botoes.pack(pady=10)
 
-    btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_tabuleiro_gui(tabuleiro, label_status, entries))
+    btn_resolver = tk.Button(frame_botoes, text="Resolver", command=lambda: resolver_animacao(tabuleiro, entries, label_status))
     btn_resolver.pack(side=tk.LEFT, padx=5)
 
-    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, label_status, entries))
+    btn_novo_tabuleiro = tk.Button(frame_botoes, text="Novo Tabuleiro", command=lambda: criar_novo_tabuleiro_gui(tabuleiro, label_status))
     btn_novo_tabuleiro.pack(side=tk.LEFT, padx=5)
 
     root.mainloop()
