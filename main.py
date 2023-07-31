@@ -1,5 +1,6 @@
 import random
 import tkinter as tk
+
 class TabuleiroSudoku:
     def __init__(self):
         # Crie um tabuleiro vazio (9x9) inicialmente com zeros
@@ -100,53 +101,17 @@ class TabuleiroSudoku:
             for j in range(3):
                 self.tabuleiro[row + i][col + j] = numeros.pop()
 
-    def mostrar_tabuleiro(self):
-        for i in range(9):
-            if i % 3 == 0 and i != 0:
-                print("- - - - - - - - - - -")
-            for j in range(9):
-                if j % 3 == 0 and j != 0:
-                    print("| ", end="")
-                print(self.tabuleiro[i][j], " ", end="")
-            print()
-
     def limpar_tabuleiro(self):
         self.tabuleiro = [[0 for _ in range(9)] for _ in range(9)]
 
-    def criar_novo_tabuleiro(self):
-        self.limpar_tabuleiro()
-        self.gerar_valido()
-        print("Tabuleiro válido gerado:")
-        self.mostrar_tabuleiro()
-
-        if self.verificar_validade():
-            print("\nTabuleiro válido.")
-        else:
-            print("\nTabuleiro inválido.")
-
-        if self.resolver():
-            print("\nTabuleiro resolvido:")
-            self.mostrar_tabuleiro()
-        else:
-            print("\nNão foi possível resolver o Sudoku.")
-
-def criar_tabuleiro_gui():
-    tabuleiro = TabuleiroSudoku()
-    tabuleiro.gerar_valido()
-    return tabuleiro
-
-def mostrar_tabuleiro_gui(tabuleiro):
-    for i in range(9):
-        if i % 3 == 0 and i != 0:
-            print("- - - - - - - - - - -")
-        for j in range(9):
-            if j % 3 == 0 and j != 0:
-                print("| ", end="")
-            print(tabuleiro.tabuleiro[i][j], " ", end="")
-        print()
-
 def resolver_tabuleiro_gui(tabuleiro, label_status):
     if tabuleiro.resolver():
+        # Se resolver, atualize os campos de entrada com os valores resolvidos
+        for i in range(9):
+            for j in range(9):
+                entry = entries[i][j]
+                entry.delete(0, tk.END)
+                entry.insert(0, str(tabuleiro.tabuleiro[i][j]))
         label_status.config(text="Tabuleiro resolvido!")
     else:
         label_status.config(text="Não foi possível resolver o Sudoku.")
@@ -154,13 +119,19 @@ def resolver_tabuleiro_gui(tabuleiro, label_status):
 def criar_novo_tabuleiro_gui(tabuleiro, label_status):
     tabuleiro.limpar_tabuleiro()
     tabuleiro.gerar_valido()
+    # Atualize os campos de entrada com os novos valores do tabuleiro
+    for i in range(9):
+        for j in range(9):
+            entry = entries[i][j]
+            entry.delete(0, tk.END)
+            entry.insert(0, str(tabuleiro.tabuleiro[i][j]))
     label_status.config(text="Tabuleiro válido gerado.")
 
 def main():
     root = tk.Tk()
     root.title("Sudoku Solver")
 
-    tabuleiro = criar_tabuleiro_gui()
+    tabuleiro = TabuleiroSudoku()
 
     label_status = tk.Label(root, text="Tabuleiro gerado. Clique em Resolver para resolver o Sudoku.")
     label_status.pack(pady=10)
@@ -168,11 +139,15 @@ def main():
     frame_tabuleiro = tk.Frame(root)
     frame_tabuleiro.pack()
 
+    entries = []
     for i in range(9):
+        row_entries = []
         for j in range(9):
             entry = tk.Entry(frame_tabuleiro, width=2, font=('Helvetica', 20))
             entry.grid(row=i, column=j)
             entry.insert(0, str(tabuleiro.tabuleiro[i][j]))
+            row_entries.append(entry)
+        entries.append(row_entries)
 
     frame_botoes = tk.Frame(root)
     frame_botoes.pack(pady=10)
